@@ -36,3 +36,5 @@ ultimaVizinhanca([Ult],Ult).
 ultimaVizinhanca([_|R],Ult):-
     ultimaVizinhanca(R,Ult).
 
+
+
