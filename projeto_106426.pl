@@ -56,12 +56,12 @@ juntar([(Lin1, Col1)|R1], [(Lin2, Col2)|R2], [(Lin2, Col2)|L]):-
 % Tabuleiro eh a variavel com a matriz que representa o tabuleiro
 % TodasCelulas eh uma lista com as coordenadas de todas as celulas do tabuleiro
 %------------------------------------------
-todasCelulas(Tabuleiro, TodasCelulas):- todasCelulas(Tabuleiro, 1, TodasCelulas).
-todasCelulas([], _, []).
-todasCelulas([P | R], Linha, Celulas):-
+todasCelulas(Tabuleiro, TodasCelulas):- todasCelulasI(Tabuleiro, 1, TodasCelulas).
+todasCelulasI([], _, []).
+todasCelulasI([P|R], Linha, Celulas):-
     linhas(P, Linha, Coor),
     Linha_N is Linha + 1,
-    todasCelulas(R, Linha_N, RestoCelulas),
+    todasCelulasI(R, Linha_N, RestoCelulas),
     append(Coor, RestoCelulas, Celulas).
 
 % Devolve uma lista com as coordenadas de uma linha
@@ -75,6 +75,28 @@ linhas([_|R], Linha, Coluna, [(Linha, Coluna_N) | Coor]):-
 % todasCelulas(Tabuleiro, TodasCelulas, Objecto)
 % Tabuleiro eh a variavel com a matriz que representa o tabuleiro
 % TodasCelulas eh uma lista com as coordenadas de todas as celulas do tabuleiro
-% Objecto eh uma tenda (t), relva (r), árvore (a) ou ainda uma variável
+% Objecto pode ser uma tenda (t), relva (r), árvore (a) ou uma variável
 %------------------------------------------
-todasCelulas(Tabuleiro, TodasCelulas, Objecto).
+todasCelulas(Tabuleiro, TodasCelulas, Objecto):- todasCelulas(Tabuleiro, 1, TodasCelulas, Objecto).
+todasCelulas([], _, [], _).
+todasCelulas([P|R], Linha, TodasCelulas, Objecto):-
+    coorlinhas(P, Linha, Coor, Objecto),
+    Linha_N is Linha + 1,
+    todasCelulas(R, Linha_N, RestoCelulas, Objecto),
+    append(Coor, RestoCelulas, TodasCelulas).
+
+% Devolve uma lista com as coordenadas do Objecto numa fila
+coorlinhas(Lista, Linha, Coor, Objecto):- coorlinhas(Lista, Linha, 0, Coor, Objecto).
+coorlinhas([], _, _, [], _).
+coorlinhas([P|R], Linha, Coluna, [(Linha, Coluna_N) | Coor], Objecto):-
+    P == Objecto,
+    Coluna_N is Coluna + 1,
+    coorlinhas(R, Linha, Coluna_N, Coor, Objecto);
+    (var(Objecto), var(P)), % verifica se ambas são variáveis
+    Coluna_N is Coluna + 1,
+    coorlinhas(R, Linha, Coluna_N, Coor, Objecto).
+coorlinhas([P|R], Linha, Coluna, Coor, Objecto):-
+    P \== Objecto,
+    Coluna_N is Coluna + 1,
+    coorlinhas(R, Linha, Coluna_N, Coor, Objecto).
+
