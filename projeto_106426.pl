@@ -56,20 +56,9 @@ juntar([(Lin1, Col1)|R1], [(Lin2, Col2)|R2], [(Lin2, Col2)|L]):-
 % Tabuleiro eh a variavel com a matriz que representa o tabuleiro
 % TodasCelulas eh uma lista com as coordenadas de todas as celulas do tabuleiro
 %------------------------------------------
-todasCelulas(Tabuleiro, TodasCelulas):- todasCelulasI(Tabuleiro, 1, TodasCelulas).
-todasCelulasI([], _, []).
-todasCelulasI([P|R], Linha, Celulas):-
-    linhas(P, Linha, Coor),
-    Linha_N is Linha + 1,
-    todasCelulasI(R, Linha_N, RestoCelulas),
-    append(Coor, RestoCelulas, Celulas).
-
-% Devolve uma lista com as coordenadas de uma linha
-linhas(Lista, Linha, Coor):- linhas(Lista, Linha, 0, Coor).
-linhas([], _, _, []).
-linhas([_|R], Linha, Coluna, [(Linha, Coluna_N) | Coor]):-
-    Coluna_N is Coluna + 1,
-    linhas(R, Linha, Coluna_N, Coor).
+todasCelulas([], []).
+todasCelulas(Tabuleiro,TodasCelulas):-
+    findall((Linhas,Colunas),(nth1(Linhas,Tabuleiro,ListaDeLinhas),nth1(Colunas,ListaDeLinhas,_)),TodasCelulas).
 
 %------------------------------------------
 % todasCelulas(Tabuleiro, TodasCelulas, Objecto)
@@ -99,4 +88,3 @@ coorlinhas([P|R], Linha, Coluna, Coor, Objecto):-
     P \== Objecto,
     Coluna_N is Coluna + 1,
     coorlinhas(R, Linha, Coluna_N, Coor, Objecto).
-
