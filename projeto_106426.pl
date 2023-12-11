@@ -57,8 +57,8 @@ juntar([(Lin1, Col1)|R1], [(Lin2, Col2)|R2], [(Lin2, Col2)|L]):-
 % TodasCelulas eh uma lista com as coordenadas de todas as celulas do tabuleiro
 %------------------------------------------
 todasCelulas([], []).
-todasCelulas(Tabuleiro,TodasCelulas):-
-    findall((Linhas,Colunas),(nth1(Linhas,Tabuleiro,ListaDeLinhas),nth1(Colunas,ListaDeLinhas,_)),TodasCelulas).
+todasCelulas(Tabuleiro, TodasCelulas):-
+    findall((Linhas, Colunas), (nth1(Linhas, Tabuleiro, ListaDeLinhas),nth1(Colunas, ListaDeLinhas,_)), TodasCelulas).
 
 %------------------------------------------
 % todasCelulas(Tabuleiro, TodasCelulas, Objecto)
@@ -66,25 +66,6 @@ todasCelulas(Tabuleiro,TodasCelulas):-
 % TodasCelulas eh uma lista com as coordenadas de todas as celulas do tabuleiro
 % Objecto pode ser uma tenda (t), relva (r), árvore (a) ou uma variável
 %------------------------------------------
-todasCelulas(Tabuleiro, TodasCelulas, Objecto):- todasCelulas(Tabuleiro, 1, TodasCelulas, Objecto).
-todasCelulas([], _, [], _).
-todasCelulas([P|R], Linha, TodasCelulas, Objecto):-
-    coorlinhas(P, Linha, Coor, Objecto),
-    Linha_N is Linha + 1,
-    todasCelulas(R, Linha_N, RestoCelulas, Objecto),
-    append(Coor, RestoCelulas, TodasCelulas).
-
-% Devolve uma lista com as coordenadas do Objecto numa fila
-coorlinhas(Lista, Linha, Coor, Objecto):- coorlinhas(Lista, Linha, 0, Coor, Objecto).
-coorlinhas([], _, _, [], _).
-coorlinhas([P|R], Linha, Coluna, [(Linha, Coluna_N) | Coor], Objecto):-
-    P == Objecto,
-    Coluna_N is Coluna + 1,
-    coorlinhas(R, Linha, Coluna_N, Coor, Objecto);
-    (var(Objecto), var(P)), % verifica se ambas são variáveis
-    Coluna_N is Coluna + 1,
-    coorlinhas(R, Linha, Coluna_N, Coor, Objecto).
-coorlinhas([P|R], Linha, Coluna, Coor, Objecto):-
-    P \== Objecto,
-    Coluna_N is Coluna + 1,
-    coorlinhas(R, Linha, Coluna_N, Coor, Objecto).
+todasCelulas([], [], _).
+todasCelulas(Tabuleiro, TodasCelulas, Objecto):-
+    findall((Linhas, Colunas), (nth1(Linhas, Tabuleiro, ListaDeLinhas), nth1(Colunas, ListaDeLinhas, Celula), ((var(Objecto), var(Celula)); Celula == Objecto)), TodasCelulas).
