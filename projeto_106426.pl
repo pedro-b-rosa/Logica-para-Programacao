@@ -56,7 +56,6 @@ juntar([(Lin1, Col1)|R1], [(Lin2, Col2)|R2], [(Lin2, Col2)|L]):-
 % Tabuleiro eh a variavel com a matriz que representa o tabuleiro
 % TodasCelulas eh uma lista com as coordenadas de todas as celulas do tabuleiro
 %------------------------------------------
-todasCelulas([], []).
 todasCelulas(Tabuleiro, TodasCelulas):-
     findall((Linhas, Colunas), (nth1(Linhas, Tabuleiro, ListaDeLinhas),nth1(Colunas, ListaDeLinhas,_)), TodasCelulas).
 
@@ -66,6 +65,29 @@ todasCelulas(Tabuleiro, TodasCelulas):-
 % TodasCelulas eh uma lista com as coordenadas de todas as celulas do tabuleiro
 % Objecto pode ser uma tenda (t), relva (r), árvore (a) ou uma variável
 %------------------------------------------
-todasCelulas([], [], _).
 todasCelulas(Tabuleiro, TodasCelulas, Objecto):-
     findall((Linhas, Colunas), (nth1(Linhas, Tabuleiro, ListaDeLinhas), nth1(Colunas, ListaDeLinhas, Celula), ((var(Objecto), var(Celula)); Celula == Objecto)), TodasCelulas).
+
+%------------------------------------------
+% calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, Objecto)
+% Tabuleiro eh a variavel com a matriz que representa o tabuleiro
+% ContagemLinhas e ContagemColunas sao listas como o número de vez que um objecto de repete nas linhas ou colunas
+% Objecto pode ser uma tenda (t), relva (r), árvore (a) ou uma variável
+%------------------------------------------
+calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, Objecto):-
+    contagem(Tabuleiro, ContagemLinhas, Objecto),
+    transpose(Tabuleiro, TabuleiroTransposto),
+    contagem(TabuleiroTransposto, ContagemColunas, Objecto).
+
+% Conta o número de vezes que um objecto aprarece e devolve uma lista com a soma por linhas
+contagem([],[],_).
+contagem([Linha|R], [Soma|Contagem], Objecto):-
+    findall(Coluna, (nth1(Coluna, Linha, Celula), ((var(Objecto), var(Celula)); Celula == Objecto)), Lista),
+    contagem(R, Contagem, Objecto),
+    somaPorLinha(Lista, Soma).
+
+% conta o número de elementos numa lista
+somaPorLinha([], 0).
+somaPorLinha([_|R], Soma_N):-
+    somaPorLinha(R, Soma),
+    Soma_N is Soma + 1.
