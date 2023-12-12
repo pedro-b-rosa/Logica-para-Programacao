@@ -5,8 +5,8 @@
 
 %------------------------------------------
 % vizinhanca(Cord,Viz)
-% Cord sao as coordenadas a que vamos calcular a vizinhança
-% Viz eh uma lista com as coordenadas da vizinhaça
+% Cord sao as coordenadas a que vamos calcular a vizinhanca
+% Viz eh uma lista com as coordenadas da vizinhaca
 %------------------------------------------
 vizinhanca((CordLin, CordCol), Viz):-
     cimaBaixo(CordLin, Cima, Baixo),
@@ -15,17 +15,17 @@ vizinhanca((CordLin, CordCol), Viz):-
 
 %------------------------------------------
 % vizinhancaAlargada(Cord,Viz)
-% Cord sao as coordenadas a que vamos calcular a vizinhança
-% VizAl eh uma lista com as coordenadas da vizinhaça alargada
+% Cord sao as coordenadas a que vamos calcular a vizinhanca
+% VizAl eh uma lista com as coordenadas da vizinhaca alargada
 %------------------------------------------
 vizinhancaAlargada((CordLin, CordCol), VizAl):-
     vizinhanca((CordLin, CordCol), Viz),
     cimaBaixo(CordLin, Cima, Baixo),
     esquerdaDireita(CordCol, Esquerda, Direita),
     Lista = [(Cima, Esquerda),(Cima, Direita),(Baixo, Esquerda),(Baixo, Direita)],
-    juntar(Lista, Viz, VizAl).
+    union(Lista,Viz,Lista1),
+    sort(Lista1, VizAl).
     
-
 % As coordenadas das linhas de cima e de baixo
 cimaBaixo(CordLin, Cima, Baixo):-
     Baixo is CordLin + 1,
@@ -35,21 +35,6 @@ cimaBaixo(CordLin, Cima, Baixo):-
 esquerdaDireita(CordCol, Esquerda, Direita):-
     Esquerda is CordCol - 1,
     Direita is CordCol + 1.
-
-% Junta e ordena duas listas
-juntar(L,[],L).
-juntar([(Lin1, Col1)|R1], [(Lin2, Col2)|R2], [(Lin1, Col1)|L]):-
-    Lin1 < Lin2,
-    juntar(R1, [(Lin2, Col2)|R2], L).
-juntar([(Lin1, Col1)|R1], [(Lin2, Col2)|R2], [(Lin1, Col1)|L]):-
-    Lin1 =< Lin2, Col1 < Col2,
-    juntar(R1, [(Lin2, Col2)|R2], L).
-juntar([(Lin1, Col1)|R1], [(Lin2, Col2)|R2], [(Lin2, Col2)|L]):-
-    Lin1 > Lin2,
-    juntar([(Lin1, Col1)|R1], R2, L).
-juntar([(Lin1, Col1)|R1], [(Lin2, Col2)|R2], [(Lin2, Col2)|L]):-
-    Lin1 >= Lin2, Col1 > Col2,
-    juntar([(Lin1, Col1)|R1], R2, L).
 
 %------------------------------------------
 % todasCelulas(Tabuleiro, TodasCelulas)
@@ -84,10 +69,91 @@ contagem([],[],_).
 contagem([Linha|R], [Soma|Contagem], Objecto):-
     findall(Coluna, (nth1(Coluna, Linha, Celula), ((var(Objecto), var(Celula)); Celula == Objecto)), Lista),
     contagem(R, Contagem, Objecto),
-    somaPorLinha(Lista, Soma).
+    length(Lista, Soma).
 
-% conta o número de elementos numa lista
-somaPorLinha([], 0).
-somaPorLinha([_|R], Soma_N):-
-    somaPorLinha(R, Soma),
-    Soma_N is Soma + 1.
+%------------------------------------------
+% celulaVazia(Tabuleiro, (L, C))
+% Tabuleiro eh a variavel com a matriz que representa o tabuleiro
+% L e C Correspodem ah linha e ah coluna que queremos verificar
+%------------------------------------------
+celulaVazia(Tabuleiro, (L, C)):-
+    todasCelulas(Tabuleiro, TodasCelulasTendas, t),
+    todasCelulas(Tabuleiro, TodasCelulasArvores, a),
+    union(TodasCelulasTendas, TodasCelulasArvores, TodasCelulasCheias),
+    not(member((L,C), TodasCelulasCheias)).
+
+%------------------------------------------
+% insereObjectoCelula(Tabuleiro, TendaOuRelva, (L, C))
+% Tabuleiro eh a variavel com a matriz que representa o tabuleiro
+% TendaOuRelva Objecto que queremos inserir pode (t) tenda ou (r) relva
+% L e C Correspodem ah linha e ah coluna onde queremos inserir o Objecto
+%------------------------------------------
+insereObjectoCelula(Tabuleiro, TendaOuRelva, (L,C)):-
+    celulaVazia(Tabuleiro, (L, C)),
+    nth1(L, Tabuleiro, ListaDeLinhas),
+    nth1(C, ListaDeLinhas, TendaOuRelva);
+    not(celulaVazia(Tabuleiro, (L, C))).
+
+%------------------------------------------
+% insereObjectoEntrePosicoes(Tabuleiro, TendaOuRelva, (L, C1), (L, C2))
+% Tabuleiro eh a variavel com a matriz que representa o tabuleiro
+% TendaOuRelva Objecto que queremos inserir pode (t) tenda ou (r) relva
+% L eh a linha onde queremos inserir os Objectos
+% C1 e C2 sao os limites das colunas em que vamos inserir os Objectos  
+%------------------------------------------
+insereObjectoEntrePosicoes(Tabuleiro, TendaOuRelva, (L, C1), (L, C2)):-
+    criadorDeListaEntreValores(C1, C2, ListaDeColunas),
+    insereVariosObjectos(Tabuleiro, TendaOuRelva, L, ListaDeColunas).
+
+% Predicado que devolve uma lista com os elementos entre dois valores
+criadorDeListaEntreValores(C2, C2, [C2]).
+criadorDeListaEntreValores(C1, C2, [C1|Lista]):-
+    C1_N is C1 + 1,
+    criadorDeListaEntreValores(C1_N, C2, Lista).
+
+% chama a funcão insereObjectoCelula/3 ao longo de uma lista de coordenadas
+insereVariosObjectos(_, _, _, []).
+insereVariosObjectos(Tabuleiro, TendaOuRelva, L, [C|R]):-
+    insereObjectoCelula(Tabuleiro, TendaOuRelva, (L,C)),
+    insereVariosObjectos(Tabuleiro, TendaOuRelva, L, R).
+
+%------------------------------------------
+% relva(Puzzle)
+% Puzzle eh a variavel com a matriz que representa o tabuleiro mais as listas com o numero de tendas por linhas e colunas
+%------------------------------------------
+relva((Tabuleiro, L, C)):-
+    length(L, Comprimento),
+    calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, t),
+    insereRelvaLinhas(Tabuleiro, L, ContagemLinhas, Comprimento),
+    transpose(Tabuleiro, TabuleiroTransposto),
+    insereRelvaLinhas(TabuleiroTransposto, C, ContagemColunas, Comprimento).
+    
+% Insere a relva no tabuleiro
+insereRelvaLinhas(Tabuleiro, Inf, Contagem, Comprimento):- insereRelvaLinhas(Tabuleiro, Inf, Contagem, Comprimento, 1).
+insereRelvaLinhas(_,[],[],_,_).
+insereRelvaLinhas(Tabuleiro, [P1|R1], [P1|R2], Comprimento, L):-
+    insereObjectoEntrePosicoes(Tabuleiro, r, (L, 1), (L, Comprimento)),
+    L_N is L + 1,
+    insereRelvaLinhas(Tabuleiro, R1, R2, Comprimento, L_N).
+insereRelvaLinhas(Tabuleiro, [P1|R1], [P2|R2], Comprimento, L):-
+    P1 \== P2,
+    L_N is L + 1,
+    insereRelvaLinhas(Tabuleiro, R1, R2, Comprimento, L_N).
+
+%------------------------------------------
+% inacessiveis(Tabuleiro)
+% Tabuleiro eh a variavel com a matriz que representa o tabuleiro 
+%------------------------------------------
+inacessiveis(Tabuleiro):-
+    todasCelulas(Tabuleiro, TodasCelulasArvores, a),
+    maplist(vizinhanca, TodasCelulasArvores, TodasVizinhancas),
+    append(TodasVizinhancas, Vizinhancas),
+    todasCelulas(Tabuleiro, TodasCelulas),
+    subtract(TodasCelulas, Vizinhancas, CelulasInacessiveis),
+    insereRelva(Tabuleiro, CelulasInacessiveis).
+
+% Insere a relva no tabuleiro
+insereRelva(_,[]).
+insereRelva(Tabuleiro, [P|R]):-
+    insereObjectoCelula(Tabuleiro, r, P),
+    insereRelva(Tabuleiro, R).
