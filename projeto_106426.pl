@@ -177,3 +177,21 @@ calculaVazios([Linha|R], [Soma|Contagem]):-
     length(Lista, Soma),
     calculaVazios(R, Contagem).
 
+%------------------------------------------
+% limpaVizinhancas(Puzzle)
+% Puzzle eh a variavel com a matriz que representa o tabuleiro mais as listas com o numero de tendas por linhas e colunas
+%------------------------------------------
+limpaVizinhancas((Tabuleiro, _, _)):-
+    todasCelulas(Tabuleiro, TodasCelulas, t),
+    maplist(vizinhancaAlargada, TodasCelulas, TodasVizinhancas),
+    append(TodasVizinhancas, Vizinhancas),
+    insereRelva(Tabuleiro, Vizinhancas).
+
+%------------------------------------------
+% unicaHipotese(Puzzle)
+% Puzzle eh a variavel com a matriz que representa o tabuleiro mais as listas com o numero de tendas por linhas e colunas
+%------------------------------------------
+unicaHipotese((Tabuleiro, _, _)):-
+    todasCelulas(Tabuleiro, TodasCelulasArvores, a),
+    maplist(vizinhanca, TodasCelulasArvores, TodasVizinhancas),
+    append(TodasVizinhancas, Vizinhancas),
