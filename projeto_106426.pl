@@ -48,7 +48,7 @@ todasCelulas(Tabuleiro, TodasCelulas):-
 % todasCelulas(Tabuleiro, TodasCelulas, Objecto)
 % Tabuleiro eh a variavel com a matriz que representa o tabuleiro
 % TodasCelulas eh uma lista com as coordenadas de todas as celulas do tabuleiro
-% Objecto pode ser uma tenda (t), relva (r), árvore (a) ou uma variável
+% Objecto pode ser uma tenda (t), relva (r), arvore (a) ou uma variavel
 %------------------------------------------
 todasCelulas(Tabuleiro, TodasCelulas, Objecto):-
     findall((Linhas, Colunas), (nth1(Linhas, Tabuleiro, ListaDeLinhas), nth1(Colunas, ListaDeLinhas, Celula), ((var(Objecto), var(Celula)); Celula == Objecto)), TodasCelulas).
@@ -56,15 +56,15 @@ todasCelulas(Tabuleiro, TodasCelulas, Objecto):-
 %------------------------------------------
 % calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, Objecto)
 % Tabuleiro eh a variavel com a matriz que representa o tabuleiro
-% ContagemLinhas e ContagemColunas sao listas como o número de vez que um objecto de repete nas linhas ou colunas
-% Objecto pode ser uma tenda (t), relva (r), árvore (a) ou uma variável
+% ContagemLinhas e ContagemColunas sao listas como o numero de vez que um objecto de repete nas linhas ou colunas
+% Objecto pode ser uma tenda (t), relva (r), arvore (a) ou uma variavel
 %------------------------------------------
 calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, Objecto):-
     contagem(Tabuleiro, ContagemLinhas, Objecto),
     transpose(Tabuleiro, TabuleiroTransposto),
     contagem(TabuleiroTransposto, ContagemColunas, Objecto).
 
-% Conta o número de vezes que um objecto aprarece e devolve uma lista com a soma por linhas
+% Conta o numero de vezes que um objecto aprarece e devolve uma lista com a soma por linhas
 contagem([],[],_).
 contagem([Linha|R], [Soma|Contagem], Objecto):-
     findall(Coluna, (nth1(Coluna, Linha, Celula), ((var(Objecto), var(Celula)); Celula == Objecto)), Lista),
@@ -111,7 +111,7 @@ criadorDeListaEntreValores(C1, C2, [C1|Lista]):-
     C1_N is C1 + 1,
     criadorDeListaEntreValores(C1_N, C2, Lista).
 
-% chama a funcão insereObjectoCelula/3 ao longo de uma lista de coordenadas
+% chama a funcao insereObjectoCelula/3 ao longo de uma lista de coordenadas
 insereVariosObjectos(_, _, _, []).
 insereVariosObjectos(Tabuleiro, TendaOuRelva, L, [C|R]):-
     insereObjectoCelula(Tabuleiro, TendaOuRelva, (L,C)),
