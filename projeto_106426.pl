@@ -91,15 +91,15 @@ celulaVazia(Tabuleiro, (L, C)):-
 insereObjectoCelula(Tabuleiro, TendaOuRelva, (L,C)):-
     celulaVazia(Tabuleiro, (L, C)),
     nth1(L, Tabuleiro, ListaDeLinhas),
-    nth1(C, ListaDeLinhas, TendaOuRelva);
-    not(celulaVazia(Tabuleiro, (L, C))).
+    nth1(C, ListaDeLinhas, TendaOuRelva).
+insereObjectoCelula(_,_,_).
 
 %------------------------------------------
 % insereObjectoEntrePosicoes(Tabuleiro, TendaOuRelva, (L, C1), (L, C2))
 % Tabuleiro eh a variavel com a matriz que representa o tabuleiro
 % TendaOuRelva Objecto que queremos inserir pode (t) tenda ou (r) relva
 % L eh a linha onde queremos inserir os Objectos
-% C1 e C2 sao os limites das colunas em que vamos inserir os Objectos  
+% C1 e C2 sao os limites das colunas em que vamos inserir os Objectos
 %------------------------------------------
 insereObjectoEntrePosicoes(Tabuleiro, TendaOuRelva, (L, C1), (L, C2)):-
     criadorDeListaEntreValores(C1, C2, ListaDeColunas),
@@ -124,21 +124,21 @@ insereVariosObjectos(Tabuleiro, TendaOuRelva, L, [C|R]):-
 relva((Tabuleiro, L, C)):-
     length(L, Comprimento),
     calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, t),
-    insereRelvaLinhas(Tabuleiro, L, ContagemLinhas, Comprimento),
+    insereLinhas(Tabuleiro, L, ContagemLinhas, Comprimento, r),
     transpose(Tabuleiro, TabuleiroTransposto),
-    insereRelvaLinhas(TabuleiroTransposto, C, ContagemColunas, Comprimento).
+    insereLinhas(TabuleiroTransposto, C, ContagemColunas, Comprimento, r).
     
 % Insere a relva no tabuleiro
-insereRelvaLinhas(Tabuleiro, Inf, Contagem, Comprimento):- insereRelvaLinhas(Tabuleiro, Inf, Contagem, Comprimento, 1).
-insereRelvaLinhas(_,[],[],_,_).
-insereRelvaLinhas(Tabuleiro, [P1|R1], [P1|R2], Comprimento, L):-
-    insereObjectoEntrePosicoes(Tabuleiro, r, (L, 1), (L, Comprimento)),
+insereLinhas(Tabuleiro, Inf, Contagem, Comprimento, Objecto):- insereLinhas(Tabuleiro, Inf, Contagem, Comprimento, Objecto, 1).
+insereLinhas(_,[],[],_,_,_).
+insereLinhas(Tabuleiro, [P1|R1], [P1|R2], Comprimento, Objecto, L):-
+    insereObjectoEntrePosicoes(Tabuleiro, Objecto, (L, 1), (L, Comprimento)),
     L_N is L + 1,
-    insereRelvaLinhas(Tabuleiro, R1, R2, Comprimento, L_N).
-insereRelvaLinhas(Tabuleiro, [P1|R1], [P2|R2], Comprimento, L):-
+    insereLinhas(Tabuleiro, R1, R2, Comprimento, Objecto, L_N).
+insereLinhas(Tabuleiro, [P1|R1], [P2|R2], Comprimento, Objecto, L):-
     P1 \== P2,
     L_N is L + 1,
-    insereRelvaLinhas(Tabuleiro, R1, R2, Comprimento, L_N).
+    insereLinhas(Tabuleiro, R1, R2, Comprimento, Objecto, L_N).
 
 %------------------------------------------
 % inacessiveis(Tabuleiro)
@@ -157,3 +157,23 @@ insereRelva(_,[]).
 insereRelva(Tabuleiro, [P|R]):-
     insereObjectoCelula(Tabuleiro, r, P),
     insereRelva(Tabuleiro, R).
+
+%------------------------------------------
+% aproveita(Puzzle)
+% Puzzle eh a variavel com a matriz que representa o tabuleiro mais as listas com o numero de tendas por linhas e colunas
+%------------------------------------------
+aproveita((Tabuleiro, L, C)):-
+    length(L, Comprimento),
+    calculaVazios(Tabuleiro, ContagemLinhas),
+    insereLinhas(Tabuleiro, L, ContagemLinhas, Comprimento, t),
+    transpose(Tabuleiro, TabuleiroTransposto),
+    calculaVazios(TabuleiroTransposto, ContagemColunas),
+    insereLinhas(TabuleiroTransposto, C, ContagemColunas, Comprimento, t).
+
+% Devolve uma lista com o numero de espacos vazios por linha
+calculaVazios([],[]).
+calculaVazios([Linha|R], [Soma|Contagem]):-
+    findall(Coluna, (nth1(Coluna, Linha, Celula), var(Celula)), Lista),
+    length(Lista, Soma),
+    calculaVazios(R, Contagem).
+
