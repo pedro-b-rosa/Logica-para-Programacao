@@ -201,11 +201,11 @@ limpaVizinhancas((Tabuleiro, _, _)):-
 % Puzzle eh a variavel com a matriz que representa o tabuleiro mais as listas com o numero de tendas por linhas e colunas
 %------------------------------------------
 unicaHipotese((Tabuleiro, _, _)):-
-    todasCelulas(Tabuleiro, TodasCelulasArvores, a),
-    maplist(vizinhanca, TodasCelulasArvores, TodasVizinhancas),
+    todasCelulas(Tabuleiro, CelulasArvores, a),
+    maplist(vizinhanca, CelulasArvores, Vizinhancas),
     todasCelulas(Tabuleiro, TodasCelulas),
-    verificaVizinhancasDentro(TodasVizinhancas, TodasCelulas, TodasVizinhancasDentro, Tabuleiro),
-    listaVizLivres(TodasVizinhancasDentro, VizLivres, Tabuleiro),
+    maplist(verificaVizinhancasDentro(TodasCelulas, Tabuleiro), Vizinhancas, VizinhancasDentro),
+    maplist(listaVizLivres(Tabuleiro), VizinhancasDentro, VizLivres),
     insereUnicaHipotese(Tabuleiro, VizLivres),!.
 
 % Verifica se nao tem nenhuma tenda nessa vizinhaca
@@ -214,12 +214,10 @@ verificaTenda(ListaViz, TodasCelulasTendas, VizinhacaPosivel) :-
     (Intersecao = [] -> VizinhacaPosivel = ListaViz ; VizinhacaPosivel = []).
 
 % Verifica se as coordenadas estao todas dentro do tabuleiro para cada vizinhanca
-verificaVizinhancasDentro([],_,[],_).
-verificaVizinhancasDentro([Vizinhos|R], TodasCelulas, [VizinhacaPosivel|RestoDentro], Tabuleiro) :-
+verificaVizinhancasDentro(TodasCelulas, Tabuleiro, Vizinhos, VizinhacaPosivel):-
     estaDentro(Vizinhos, TodasCelulas, VizinhosDentro),
     todasCelulas(Tabuleiro, TodasCelulasTendas, t),
-    verificaTenda(VizinhosDentro, TodasCelulasTendas, VizinhacaPosivel),
-    verificaVizinhancasDentro(R, TodasCelulas, RestoDentro, Tabuleiro).
+    verificaTenda(VizinhosDentro, TodasCelulasTendas, VizinhacaPosivel).
 
 % Verifica se as coordenadas estao todas dentro do tabuleiro dentro de uma vizinhaca
 estaDentro([],_,[]).
@@ -230,11 +228,9 @@ estaDentro([_|R], TodasCelulas, Dentro):-
     estaDentro(R, TodasCelulas, Dentro).
 
 % Ver se tem apenas uma vizinhanca livre
-listaVizLivres([],[],_).
-listaVizLivres([P|R], [CelulasLivres|Lista], Tabuleiro):-
-    todasCelulas(Tabuleiro, TodasCelulasRelva, r),
-    findall(Celula, (member(Celula, P), celulaVazia(Tabuleiro, Celula), \+ member(Celula, TodasCelulasRelva)), CelulasLivres),
-    listaVizLivres(R, Lista, Tabuleiro).
+listaVizLivres(Tabuleiro, Vizinhos, CelulasLivres):-
+    todasCelulas(Tabuleiro, CelulasRelva, r),
+    findall(Celula, (member(Celula, Vizinhos), celulaVazia(Tabuleiro, Celula), \+ member(Celula, CelulasRelva)), CelulasLivres).
 
 % Insere no tabuleiro uma tenda caso seja a unica hipotese
 insereUnicaHipotese(_,[]).
