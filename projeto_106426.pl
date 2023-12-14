@@ -80,7 +80,7 @@ celulaVazia(Tabuleiro, (L, C)):-
     todasCelulas(Tabuleiro, TodasCelulasTendas, t),
     todasCelulas(Tabuleiro, TodasCelulasArvores, a),
     union(TodasCelulasTendas, TodasCelulasArvores, TodasCelulasCheias),
-    not(member((L,C), TodasCelulasCheias)).
+    \+ member((L,C), TodasCelulasCheias).
 
 %------------------------------------------
 % insereObjectoCelula(Tabuleiro, TendaOuRelva, (L, C))
@@ -166,10 +166,18 @@ insereRelva(Tabuleiro, [P|R]):-
 aproveita((Tabuleiro, L, C)):-
     length(L, Comprimento),
     calculaVazios(Tabuleiro, ContagemLinhas),
-    insereLinhas(Tabuleiro, L, ContagemLinhas, Comprimento, t),
+    calculaObjectosTabuleiro(Tabuleiro, ContagemLinhasTendas, ContagemColunasTendas, t),
+    maplist(sub, ContagemLinhas, ContagemLinhasTendas, ContagemL),
+    insereLinhas(Tabuleiro, L, ContagemL, Comprimento, t),
     transpose(Tabuleiro, TabuleiroTransposto),
     calculaVazios(TabuleiroTransposto, ContagemColunas),
-    insereLinhas(TabuleiroTransposto, C, ContagemColunas, Comprimento, t),!.
+    maplist(sub, ContagemColunas, ContagemColunasTendas, ContagemC),
+    insereLinhas(TabuleiroTransposto, C, ContagemC, Comprimento, t),
+    transpose(TabuleiroTransposto, Tabuleiro),!.
+
+% Subetrai dois numeros
+sub(X, Y, Sub):-
+    Sub is X - Y.
 
 % Devolve uma lista com o numero de espacos vazios por linha
 calculaVazios([],[]).
@@ -195,21 +203,44 @@ limpaVizinhancas((Tabuleiro, _, _)):-
 unicaHipotese((Tabuleiro, _, _)):-
     todasCelulas(Tabuleiro, TodasCelulasArvores, a),
     maplist(vizinhanca, TodasCelulasArvores, TodasVizinhancas),
-    listaVizLivres(TodasVizinhancas, VizLivres, Tabuleiro),
+    todasCelulas(Tabuleiro, TodasCelulas),
+    verificaVizinhancasDentro(TodasVizinhancas, TodasCelulas, TodasVizinhancasDentro, Tabuleiro),
+    listaVizLivres(TodasVizinhancasDentro, VizLivres, Tabuleiro),
     insereUnicaHipotese(Tabuleiro, VizLivres),!.
+
+% Verifica se nao tem nenhuma tenda nessa vizinhaca
+verificaTenda(ListaViz, TodasCelulasTendas, VizinhacaPosivel) :-
+    intersection(ListaViz, TodasCelulasTendas, Intersecao),
+    (Intersecao = [] -> VizinhacaPosivel = ListaViz ; VizinhacaPosivel = []).
+
+% Verifica se as coordenadas estao todas dentro do tabuleiro para cada vizinhanca
+verificaVizinhancasDentro([],_,[],_).
+verificaVizinhancasDentro([Vizinhos|R], TodasCelulas, [VizinhacaPosivel|RestoDentro], Tabuleiro) :-
+    estaDentro(Vizinhos, TodasCelulas, VizinhosDentro),
+    todasCelulas(Tabuleiro, TodasCelulasTendas, t),
+    verificaTenda(VizinhosDentro, TodasCelulasTendas, VizinhacaPosivel),
+    verificaVizinhancasDentro(R, TodasCelulas, RestoDentro, Tabuleiro).
+
+% Verifica se as coordenadas estao todas dentro do tabuleiro dentro de uma vizinhaca
+estaDentro([],_,[]).
+estaDentro([P|R], TodasCelulas, [P|Dentro]):-
+    member(P, TodasCelulas),
+    estaDentro(R, TodasCelulas, Dentro),!.
+estaDentro([_|R], TodasCelulas, Dentro):-
+    estaDentro(R, TodasCelulas, Dentro).
 
 % Ver se tem apenas uma vizinhanca livre
 listaVizLivres([],[],_).
 listaVizLivres([P|R], [CelulasLivres|Lista], Tabuleiro):-
     todasCelulas(Tabuleiro, TodasCelulasRelva, r),
-    findall(Celula, (member(Celula, P), celulaVazia(Tabuleiro, Celula), not(member(Celula, TodasCelulasRelva))), CelulasLivres),
+    findall(Celula, (member(Celula, P), celulaVazia(Tabuleiro, Celula), \+ member(Celula, TodasCelulasRelva)), CelulasLivres),
     listaVizLivres(R, Lista, Tabuleiro).
 
 % Insere no tabuleiro uma tenda caso seja a unica hipotese
 insereUnicaHipotese(_,[]).
 insereUnicaHipotese(Tabuleiro, [[P]|R]):-
     length([P], 1),
-    insereObjectoCelula(Tabuleiro, t, P),
+    insereObjectoCelula(Tabuleiro, t, P),!,
     insereUnicaHipotese(Tabuleiro, R).
 
 insereUnicaHipotese(Tabuleiro, [_|R]):-
@@ -262,5 +293,6 @@ resolve(Puzzle, _, L):-
     unicaHipotese(Puzzle),
     limpaVizinhancas(Puzzle),
     (Tabuleiro, _, _) = Puzzle,
-    calculaObjectosTabuleiro(Tabuleiro, Clinhas, _, t),
+    inacessiveis(Tabuleiro),
+    calculaObjectosTabuleiro(Tabuleiro, Clinhas, _, t),!,
     resolve(Puzzle, Clinhas, L).
