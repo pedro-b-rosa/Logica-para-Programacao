@@ -126,7 +126,7 @@ relva((Tabuleiro, L, C)):-
     calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, t),
     insereLinhas(Tabuleiro, L, ContagemLinhas, Comprimento, r),
     transpose(Tabuleiro, TabuleiroTransposto),
-    insereLinhas(TabuleiroTransposto, C, ContagemColunas, Comprimento, r).
+    insereLinhas(TabuleiroTransposto, C, ContagemColunas, Comprimento, r),!.
     
 % Insere a relva no tabuleiro
 insereLinhas(Tabuleiro, Inf, Contagem, Comprimento, Objecto):- insereLinhas(Tabuleiro, Inf, Contagem, Comprimento, Objecto, 1).
@@ -150,7 +150,7 @@ inacessiveis(Tabuleiro):-
     append(TodasVizinhancas, Vizinhancas),
     todasCelulas(Tabuleiro, TodasCelulas),
     subtract(TodasCelulas, Vizinhancas, CelulasInacessiveis),
-    insereRelva(Tabuleiro, CelulasInacessiveis).
+    insereRelva(Tabuleiro, CelulasInacessiveis),!.
 
 % Insere a relva no tabuleiro
 insereRelva(_,[]).
@@ -168,7 +168,7 @@ aproveita((Tabuleiro, L, C)):-
     insereLinhas(Tabuleiro, L, ContagemLinhas, Comprimento, t),
     transpose(Tabuleiro, TabuleiroTransposto),
     calculaVazios(TabuleiroTransposto, ContagemColunas),
-    insereLinhas(TabuleiroTransposto, C, ContagemColunas, Comprimento, t).
+    insereLinhas(TabuleiroTransposto, C, ContagemColunas, Comprimento, t),!.
 
 % Devolve uma lista com o numero de espacos vazios por linha
 calculaVazios([],[]).
@@ -185,7 +185,7 @@ limpaVizinhancas((Tabuleiro, _, _)):-
     todasCelulas(Tabuleiro, TodasCelulas, t),
     maplist(vizinhancaAlargada, TodasCelulas, TodasVizinhancas),
     append(TodasVizinhancas, Vizinhancas),
-    insereRelva(Tabuleiro, Vizinhancas).
+    insereRelva(Tabuleiro, Vizinhancas),!.
 
 %------------------------------------------
 % unicaHipotese(Puzzle)
@@ -194,4 +194,49 @@ limpaVizinhancas((Tabuleiro, _, _)):-
 unicaHipotese((Tabuleiro, _, _)):-
     todasCelulas(Tabuleiro, TodasCelulasArvores, a),
     maplist(vizinhanca, TodasCelulasArvores, TodasVizinhancas),
-    append(TodasVizinhancas, Vizinhancas),
+    listaVizLivres(TodasVizinhancas, VizLivres, Tabuleiro),
+    insereUnicaHipotese(Tabuleiro, VizLivres),!.
+
+% Ver se tem apenas uma vizinhanca livre
+listaVizLivres([],[],_).
+listaVizLivres([P|R], [CelulasLivres|Lista], Tabuleiro):-
+    todasCelulas(Tabuleiro, TodasCelulasRelva, r),
+    findall(Celula, (member(Celula, P), celulaVazia(Tabuleiro, Celula), not(member(Celula, TodasCelulasRelva))), CelulasLivres),
+    listaVizLivres(R, Lista, Tabuleiro).
+
+% Insere no tabuleiro uma tenda caso seja a unica hipotese
+insereUnicaHipotese(_,[]).
+insereUnicaHipotese(Tabuleiro, [[P]|R]):-
+    length([P], 1),
+    insereObjectoCelula(Tabuleiro, t, P),
+    insereUnicaHipotese(Tabuleiro, R).
+insereUnicaHipotese(Tabuleiro, [_|R]):-
+    insereUnicaHipotese(Tabuleiro, R).
+
+%------------------------------------------
+% valida(LArv, LTen)
+% e LArv e LTen sao listas com todas as coordenadas das tendas e das arvores
+%------------------------------------------
+valida([], []):-!.
+valida(LArv, [Ten | RTen]) :-
+    maplist(vizinhanca, LArv, VizLArv),
+    findall(ArvN, (nth1(ArvN, VizLArv, Viz), member(Ten, Viz)), [I]),
+    length([I], 1),
+    nth1(I, LArv, Arv),
+    select(Arv, LArv, LArv_N),!,
+    valida(LArv_N, RTen).
+valida(LArv, [Ten1, Ten2]) :-
+    maplist(vizinhanca, LArv, VizLArv),
+    findall(ArvN1, (nth1(ArvN1, VizLArv, Viz), member(Ten1, Viz)), I1),
+    length(I1, 2),
+    findall(ArvN2, (nth1(ArvN2, VizLArv, Viz), member(Ten2, Viz)), I2),
+    length(I2, 2),!,
+    valida(LArv, []).
+valida(LArv, [Ten | RTen]) :-
+    maplist(vizinhanca, LArv, VizLArv),
+    findall(ArvN, (nth1(ArvN, VizLArv, Viz), member(Ten, Viz)), I),
+    length(I, C),
+    C > 1,
+    append(RTen, [Ten], RTen_N),!,
+    valida(LArv, RTen_N).
+
