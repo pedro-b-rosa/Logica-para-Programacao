@@ -135,6 +135,7 @@ insereLinhas(Tabuleiro, [P1|R1], [P1|R2], Comprimento, Objecto, L):-
     insereObjectoEntrePosicoes(Tabuleiro, Objecto, (L, 1), (L, Comprimento)),
     L_N is L + 1,
     insereLinhas(Tabuleiro, R1, R2, Comprimento, Objecto, L_N).
+
 insereLinhas(Tabuleiro, [P1|R1], [P2|R2], Comprimento, Objecto, L):-
     P1 \== P2,
     L_N is L + 1,
@@ -210,12 +211,13 @@ insereUnicaHipotese(Tabuleiro, [[P]|R]):-
     length([P], 1),
     insereObjectoCelula(Tabuleiro, t, P),
     insereUnicaHipotese(Tabuleiro, R).
+
 insereUnicaHipotese(Tabuleiro, [_|R]):-
     insereUnicaHipotese(Tabuleiro, R).
 
 %------------------------------------------
 % valida(LArv, LTen)
-% e LArv e LTen sao listas com todas as coordenadas das tendas e das arvores
+% LArv e LTen sao listas com todas as coordenadas das tendas e das arvores
 %------------------------------------------
 valida([], []):-!.
 valida(LArv, [Ten | RTen]) :-
@@ -225,6 +227,7 @@ valida(LArv, [Ten | RTen]) :-
     nth1(I, LArv, Arv),
     select(Arv, LArv, LArv_N),!,
     valida(LArv_N, RTen).
+
 valida(LArv, [Ten1, Ten2]) :-
     maplist(vizinhanca, LArv, VizLArv),
     findall(ArvN1, (nth1(ArvN1, VizLArv, Viz), member(Ten1, Viz)), I1),
@@ -232,6 +235,7 @@ valida(LArv, [Ten1, Ten2]) :-
     findall(ArvN2, (nth1(ArvN2, VizLArv, Viz), member(Ten2, Viz)), I2),
     length(I2, 2),!,
     valida(LArv, []).
+
 valida(LArv, [Ten | RTen]) :-
     maplist(vizinhanca, LArv, VizLArv),
     findall(ArvN, (nth1(ArvN, VizLArv, Viz), member(Ten, Viz)), I),
@@ -240,3 +244,23 @@ valida(LArv, [Ten | RTen]) :-
     append(RTen, [Ten], RTen_N),!,
     valida(LArv, RTen_N).
 
+%------------------------------------------
+% resolve(Puzzle)
+% Puzzle eh a variavel com a matriz que representa o tabuleiro mais as listas com o numero de tendas por linhas e colunas
+%------------------------------------------
+resolve(Puzzle):-
+    (Tabuleiro, L, _) = Puzzle,
+    calculaObjectosTabuleiro(Tabuleiro, Clinhas, _, t),
+    resolve(Puzzle, Clinhas, L).
+
+resolve(_, L, L):-!.
+resolve(Puzzle, _, L):-
+    relva(Puzzle),
+    aproveita(Puzzle),
+    relva(Puzzle),
+    limpaVizinhancas(Puzzle),
+    unicaHipotese(Puzzle),
+    limpaVizinhancas(Puzzle),
+    (Tabuleiro, _, _) = Puzzle,
+    calculaObjectosTabuleiro(Tabuleiro, Clinhas, _, t),
+    resolve(Puzzle, Clinhas, L).
