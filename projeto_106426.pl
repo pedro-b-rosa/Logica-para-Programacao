@@ -201,12 +201,16 @@ limpaVizinhancas((Tabuleiro, _, _)):-
 % Puzzle eh a variavel com a matriz que representa o tabuleiro mais as listas com o numero de tendas por linhas e colunas
 %------------------------------------------
 unicaHipotese((Tabuleiro, _, _)):-
+    vazias(Tabuleiro, VizLivres),
+    insereUnicaHipotese(Tabuleiro, VizLivres),!.
+
+% Devolve as Vizinhancas vazias
+vazias(Tabuleiro, VizLivres):-
     todasCelulas(Tabuleiro, CelulasArvores, a),
     maplist(vizinhanca, CelulasArvores, Vizinhancas),
     todasCelulas(Tabuleiro, TodasCelulas),
     maplist(verificaVizinhancasDentro(TodasCelulas, Tabuleiro), Vizinhancas, VizinhancasDentro),
-    maplist(listaVizLivres(Tabuleiro), VizinhancasDentro, VizLivres),
-    insereUnicaHipotese(Tabuleiro, VizLivres),!.
+    maplist(listaVizLivres(Tabuleiro), VizinhancasDentro, VizLivres).
 
 % Verifica se nao tem nenhuma tenda nessa vizinhaca
 verificaTenda(ListaViz, TodasCelulasTendas, VizinhacaPosivel) :-
@@ -288,7 +292,71 @@ resolve(Puzzle, _, L):-
     limpaVizinhancas(Puzzle),
     unicaHipotese(Puzzle),
     limpaVizinhancas(Puzzle),
-    (Tabuleiro, _, _) = Puzzle,
+    unicaHipotese2(Puzzle),
+    limpaVizinhancas(Puzzle),
+    (Tabuleiro, L, C) = Puzzle,
     inacessiveis(Tabuleiro),
-    calculaObjectosTabuleiro(Tabuleiro, Clinhas, _, t),!,
+    calculaObjectosTabuleiro(Tabuleiro, Clinhas, _, t),
+    Puzzle = (Tabuleiro, L, C),
     resolve(Puzzle, Clinhas, L).
+
+% Coloca uma tenda caso seja a unica opcao para uma arvore
+unicaHipotese2((Tabuleiro, L, C)):-
+    vazias(Tabuleiro, VizLivres),
+    length(L, MaxLinha),
+    insereUnicaHipotese2(Tabuleiro, 0, VizLivres, L, MaxLinha),
+    transpose(Tabuleiro, TabuleiroTransposto),
+    insereUnicaHipotese2(TabuleiroTransposto, 0, VizLivres, C, MaxLinha),
+    transpose(TabuleiroTransposto, Tabuleiro),!.
+unicaHipotese2(_).
+
+% Insere no tabuleiro uma tenda caso acha duas vizinhancas para uma linha com falta de duas tendas e uma das vizinhancas so tem uma hipotese
+insereUnicaHipotese2(_, MaxLinha,_,_, MaxLinha).
+insereUnicaHipotese2(Tabuleiro, LinhaA, VizLivres, L, MaxLinha):-
+    Linha is LinhaA + 1,
+    dividePorLinhas(VizLivres, Lista, Linha),
+    nth1(Linha, L, I),
+    calculaObjectosTabuleiro(Tabuleiro, ConTen, _, t),
+    nth1(Linha, ConTen, H),
+    sub(I, H, TendasQueFaltam),
+    lista(Lista, Lista1, Lista2),
+    tiraRep(Lista2, Lista1, Lista3),
+    length(Lista3, TendasQueFaltam),
+    insereUnicaHipotese(Tabuleiro, Lista),
+    insereUnicaHipotese2(Tabuleiro, Linha, VizLivres, L, MaxLinha).
+
+% Divide as vizinhancas por linhas
+dividePorLinhas([],[],_).
+dividePorLinhas([P|R], [Coor|Lista], Linha):-
+    findall((L, C), (member((L, C), P), L == Linha), Coor),
+    Coor \== [],
+    dividePorLinhas(R, Lista, Linha).
+dividePorLinhas([P|R], Lista, Linha):-
+    findall((L, C), (member((L, C), P), L == Linha), Coor),
+    Coor == [],
+    dividePorLinhas(R, Lista, Linha).
+
+%devolve lista com mais de 1 elemento
+lista([],[],[]).
+lista([P|R], [P|R1], R2):-
+    length(P, C),
+    C>1,
+    lista(R, R1, R2).
+lista([P|R], R1, [P|R2]):-  
+    lista(R, R1, R2).
+
+% Devolve listas com uma coordenada e que nao se repete
+tiraRep([],_,[]).
+tiraRep([[P]|R], ConjuntoDeListas, [P,R1]):-
+    elemento_nao_pertence(P, ConjuntoDeListas),!,
+    tiraRep(R, ConjuntoDeListas, R1).
+tiraRep([_|R], ConjuntoDeListas, R1):-
+    tiraRep(R, ConjuntoDeListas, R1).
+
+% Verifica se Elemento nao pertence a nenhuma lista em um conjunto de listas
+elemento_nao_pertence(Elemento, ConjuntoDeListas) :-
+    \+ pertence_a_lista(Elemento, ConjuntoDeListas).
+% Verifica se Elemento pertence a alguma lista em um conjunto de listas
+pertence_a_lista(Elemento, ConjuntoDeListas) :-
+    member(Lista, ConjuntoDeListas),
+    member(Elemento, Lista).
