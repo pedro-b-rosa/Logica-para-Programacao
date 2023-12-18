@@ -104,4 +104,8 @@ puzzle(6-13, P), resolve(P), sol(6-13, P).
 puzzle(6-14, P), resolve(P), sol(6-14, P).
 puzzle(8-1, P), resolve(P), sol(8-1, P).
 
+puzzle(6-13, P), resolve(P), sol(6-13, P1), P1 == P, writeln(true); writeln(false).
+puzzle(6-14, P), resolve(P), sol(6-14, P1), P1 == P, writeln(true); writeln(false).
+puzzle(8-1, P), resolve(P), sol(8-1, P1), P1 == P, writeln(true); writeln(false).
+
 */
