@@ -65,7 +65,7 @@ calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, Objecto):-
     contagem(TabuleiroTransposto, ContagemColunas, Objecto).
 
 % Conta o numero de vezes que um objecto aprarece e devolve uma lista com a soma por linhas
-contagem([],[],_).
+contagem([],[],_):-!.
 contagem([Linha|R], [Soma|Contagem], Objecto):-
     findall(Coluna, (nth1(Coluna, Linha, Celula), ((var(Objecto), var(Celula)); Celula == Objecto)), Lista),
     contagem(R, Contagem, Objecto),
@@ -112,7 +112,7 @@ criadorDeListaEntreValores(C1, C2, [C1|Lista]):-
     criadorDeListaEntreValores(C1_N, C2, Lista).
 
 % chama a funcao insereObjectoCelula/3 ao longo de uma lista de coordenadas
-insereVariosObjectos(_, _, _, []).
+insereVariosObjectos(_, _, _, []):-!.
 insereVariosObjectos(Tabuleiro, TendaOuRelva, L, [C|R]):-
     insereObjectoCelula(Tabuleiro, TendaOuRelva, (L,C)),
     insereVariosObjectos(Tabuleiro, TendaOuRelva, L, R).
@@ -126,11 +126,11 @@ relva((Tabuleiro, L, C)):-
     calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, t),
     insereLinhas(Tabuleiro, L, ContagemLinhas, Comprimento, r),
     transpose(Tabuleiro, TabuleiroTransposto),
-    insereLinhas(TabuleiroTransposto, C, ContagemColunas, Comprimento, r),!.
+    insereLinhas(TabuleiroTransposto, C, ContagemColunas, Comprimento, r).
     
 % Insere a relva no tabuleiro
 insereLinhas(Tabuleiro, Inf, Contagem, Comprimento, Objecto):- insereLinhas(Tabuleiro, Inf, Contagem, Comprimento, Objecto, 1).
-insereLinhas(_,[],[],_,_,_).
+insereLinhas(_,[],[],_,_,_):-!.
 insereLinhas(Tabuleiro, [P1|R1], [P1|R2], Comprimento, Objecto, L):-
     insereObjectoEntrePosicoes(Tabuleiro, Objecto, (L, 1), (L, Comprimento)),
     L_N is L + 1,
@@ -151,10 +151,10 @@ inacessiveis(Tabuleiro):-
     append(TodasVizinhancas, Vizinhancas),
     todasCelulas(Tabuleiro, TodasCelulas),
     subtract(TodasCelulas, Vizinhancas, CelulasInacessiveis),
-    insereRelva(Tabuleiro, CelulasInacessiveis),!.
+    insereRelva(Tabuleiro, CelulasInacessiveis).
 
 % Insere a relva no tabuleiro
-insereRelva(_,[]).
+insereRelva(_,[]):-!.
 insereRelva(Tabuleiro, [P|R]):-
     insereObjectoCelula(Tabuleiro, r, P),
     insereRelva(Tabuleiro, R).
@@ -173,14 +173,14 @@ aproveita((Tabuleiro, L, C)):-
     calculaVazios(TabuleiroTransposto, ContagemColunas),
     maplist(sub, ContagemColunas, ContagemColunasTendas, ContagemC),
     insereLinhas(TabuleiroTransposto, C, ContagemC, Comprimento, t),
-    transpose(TabuleiroTransposto, Tabuleiro),!.
+    transpose(TabuleiroTransposto, Tabuleiro).
 
 % Subetrai dois numeros
 sub(X, Y, Sub):-
     Sub is X - Y.
 
 % Devolve uma lista com o numero de espacos vazios por linha
-calculaVazios([],[]).
+calculaVazios([],[]):-!.
 calculaVazios([Linha|R], [Soma|Contagem]):-
     findall(Coluna, (nth1(Coluna, Linha, Celula), var(Celula)), Lista),
     length(Lista, Soma),
@@ -194,7 +194,7 @@ limpaVizinhancas((Tabuleiro, _, _)):-
     todasCelulas(Tabuleiro, TodasCelulas, t),
     maplist(vizinhancaAlargada, TodasCelulas, TodasVizinhancas),
     append(TodasVizinhancas, Vizinhancas),
-    insereRelva(Tabuleiro, Vizinhancas),!.
+    insereRelva(Tabuleiro, Vizinhancas).
 
 %------------------------------------------
 % unicaHipotese(Puzzle)
@@ -202,7 +202,7 @@ limpaVizinhancas((Tabuleiro, _, _)):-
 %------------------------------------------
 unicaHipotese((Tabuleiro, _, _)):-
     vazias(Tabuleiro, VizLivres),
-    insereUnicaHipotese(Tabuleiro, VizLivres),!.
+    insereUnicaHipotese(Tabuleiro, VizLivres).
 
 % Devolve as Vizinhancas vazias
 vazias(Tabuleiro, VizLivres):-
@@ -224,10 +224,10 @@ verificaVizinhancasDentro(TodasCelulas, Tabuleiro, Vizinhos, VizinhacaPosivel):-
     verificaTenda(VizinhosDentro, TodasCelulasTendas, VizinhacaPosivel).
 
 % Verifica se as coordenadas estao todas dentro do tabuleiro dentro de uma vizinhaca
-estaDentro([],_,[]).
+estaDentro([],_,[]):-!.
 estaDentro([P|R], TodasCelulas, [P|Dentro]):-
     member(P, TodasCelulas),
-    estaDentro(R, TodasCelulas, Dentro),!.
+    estaDentro(R, TodasCelulas, Dentro).
 estaDentro([_|R], TodasCelulas, Dentro):-
     estaDentro(R, TodasCelulas, Dentro).
 
@@ -237,10 +237,10 @@ listaVizLivres(Tabuleiro, Vizinhos, CelulasLivres):-
     findall(Celula, (member(Celula, Vizinhos), celulaVazia(Tabuleiro, Celula), \+ member(Celula, CelulasRelva)), CelulasLivres).
 
 % Insere no tabuleiro uma tenda caso seja a unica hipotese
-insereUnicaHipotese(_,[]).
+insereUnicaHipotese(_,[]):-!.
 insereUnicaHipotese(Tabuleiro, [[P]|R]):-
     length([P], 1),
-    insereObjectoCelula(Tabuleiro, t, P),!,
+    insereObjectoCelula(Tabuleiro, t, P),
     insereUnicaHipotese(Tabuleiro, R).
 
 insereUnicaHipotese(Tabuleiro, [_|R]):-
@@ -256,7 +256,7 @@ valida(LArv, [Ten | RTen]) :-
     findall(ArvN, (nth1(ArvN, VizLArv, Viz), member(Ten, Viz)), [I]),
     length([I], 1),
     nth1(I, LArv, Arv),
-    select(Arv, LArv, LArv_N),!,
+    select(Arv, LArv, LArv_N),
     valida(LArv_N, RTen).
 
 valida(LArv, [Ten1, Ten2]) :-
@@ -264,7 +264,7 @@ valida(LArv, [Ten1, Ten2]) :-
     findall(ArvN1, (nth1(ArvN1, VizLArv, Viz), member(Ten1, Viz)), I1),
     length(I1, 2),
     findall(ArvN2, (nth1(ArvN2, VizLArv, Viz), member(Ten2, Viz)), I2),
-    length(I2, 2),!,
+    length(I2, 2),
     valida(LArv, []).
 
 valida(LArv, [Ten | RTen]) :-
@@ -272,7 +272,7 @@ valida(LArv, [Ten | RTen]) :-
     findall(ArvN, (nth1(ArvN, VizLArv, Viz), member(Ten, Viz)), I),
     length(I, C),
     C > 1,
-    append(RTen, [Ten], RTen_N),!,
+    append(RTen, [Ten], RTen_N),
     valida(LArv, RTen_N).
 
 %------------------------------------------
@@ -280,12 +280,27 @@ valida(LArv, [Ten | RTen]) :-
 % Puzzle eh a variavel com a matriz que representa o tabuleiro mais as listas com o numero de tendas por linhas e colunas
 %------------------------------------------
 resolve(Puzzle):-
-    verifica(Puzzle),!.
+    verifica(Puzzle).
 resolve(Puzzle):-
-    \+ verifica(Puzzle),
+    \+ verificacheio(Puzzle),
     resolve2(Puzzle, Puzzle1),
     coloca(Puzzle1, Puzzle2),
-    resolve(Puzzle2).
+    resolve2(Puzzle2, Puzzle3),
+    resolve(Puzzle3).
+
+% Verifica se o puzzle esta cheio com as tendas
+verificacheio(Puzzle):-
+    calculaObjectosTabuleiro(Puzzle, ContagemLinhas, _, t),
+    (_, L, _) = Puzzle,
+    soma(ContagemLinhas, SLin),
+    soma(L, SL),
+    SLin == SL.
+
+% Soma elementos de uma lista
+soma([], 0).
+soma([X|R], S) :-
+    soma(R, S1),
+    S is X + S1.
 
 % verifica se o puzzle esta resolvido
 verifica(Puzzle):-
@@ -310,7 +325,5 @@ coloca(Puzzle, Puzzle1):-
     (Tabuleiro, L, C) = Puzzle,
     vazias(Tabuleiro, VizLivres),
     member(Viz, VizLivres),
-    member(Celula, Viz),
-    insereObjectoCelula(Tabuleiro, t, Celula),
-    Puzzle1 = (Tabuleiro, L, C);
-    Puzzle1 = Puzzle.
+    writeln(Tabuleiro),
+    (Viz = [] -> fail; member(Celula, Viz), insereObjectoCelula(Tabuleiro, t, Celula), Puzzle1 = (Tabuleiro, L, C)).
