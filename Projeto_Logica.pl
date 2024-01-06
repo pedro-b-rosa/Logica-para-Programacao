@@ -106,10 +106,14 @@ insereObjectoEntrePosicoes(Tabuleiro, TendaOuRelva, (L, C1), (L, C2)):-
     insereVariosObjectos(Tabuleiro, TendaOuRelva, L, ListaDeColunas).
 
 % Predicado que devolve uma lista com os elementos entre dois valores
-criadorDeListaEntreValores(C2, C2, [C2]).
-criadorDeListaEntreValores(C1, C2, [C1|Lista]):-
-    C1_N is C1 + 1,
-    criadorDeListaEntreValores(C1_N, C2, Lista).
+criadorDeListaEntreValores(C1, C2, Lista) :-
+    C1 =< C2,
+    criadorDeListaEntreValoresIter(C1, C2, Lista).
+criadorDeListaEntreValoresIter(C, C, [C]).
+criadorDeListaEntreValoresIter(C1, C2, [C1 | Lista]) :-
+    C1 < C2,
+    C1_Next is C1 + 1,
+    criadorDeListaEntreValoresIter(C1_Next, C2, Lista).
 
 % chama a funcao insereObjectoCelula/3 ao longo de uma lista de coordenadas
 insereVariosObjectos(_, _, _, []):-!.
@@ -250,80 +254,91 @@ insereUnicaHipotese(Tabuleiro, [_|R]):-
 % valida(LArv, LTen)
 % LArv e LTen sao listas com todas as coordenadas das tendas e das arvores
 %------------------------------------------
-valida([], []):-!.
-valida(LArv, [Ten | RTen]) :-
-    maplist(vizinhanca, LArv, VizLArv),
-    findall(ArvN, (nth1(ArvN, VizLArv, Viz), member(Ten, Viz)), [I]),
-    length([I], 1),
-    nth1(I, LArv, Arv),
-    select(Arv, LArv, LArv_N),
-    valida(LArv_N, RTen).
+valida(Larv, Lten):-
+    length(Larv, Comprimento),
+    length(Lten, Comprimento),
+    validaAux(Larv, Lten).
 
-valida(LArv, [Ten1, Ten2]) :-
-    maplist(vizinhanca, LArv, VizLArv),
-    findall(ArvN1, (nth1(ArvN1, VizLArv, Viz), member(Ten1, Viz)), I1),
-    length(I1, 2),
-    findall(ArvN2, (nth1(ArvN2, VizLArv, Viz), member(Ten2, Viz)), I2),
-    length(I2, 2),
-    valida(LArv, []).
-
-valida(LArv, [Ten | RTen]) :-
-    maplist(vizinhanca, LArv, VizLArv),
-    findall(ArvN, (nth1(ArvN, VizLArv, Viz), member(Ten, Viz)), I),
-    length(I, C),
-    C > 1,
-    append(RTen, [Ten], RTen_N),
-    valida(LArv, RTen_N).
+validaAux([], []):-!.
+validaAux([Arv | RestArv], Lten) :-
+    vizinhanca(Arv, Vizinhaca),
+    member(Tenda, Lten),
+    member(Tenda, Vizinhaca),
+    delete(Lten, Tenda, Lten1),
+    validaAux(RestArv, Lten1).
 
 %------------------------------------------
 % resolve(Puzzle)
 % Puzzle eh a variavel com a matriz que representa o tabuleiro mais as listas com o numero de tendas por linhas e colunas
 %------------------------------------------
 resolve(Puzzle):-
-    verifica(Puzzle).
-resolve(Puzzle):-
-    \+ verificacheio(Puzzle),
-    resolve2(Puzzle, Puzzle1),
-    coloca(Puzzle1, Puzzle2),
-    resolve2(Puzzle2, Puzzle3),
-    resolve(Puzzle3).
+    resolveAux(Puzzle).
 
-% Verifica se o puzzle esta cheio com as tendas
-verificacheio(Puzzle):-
-    calculaObjectosTabuleiro(Puzzle, ContagemLinhas, _, t),
-    (_, L, _) = Puzzle,
-    soma(ContagemLinhas, SLin),
-    soma(L, SL),
-    SLin == SL.
+% resolve Auxiliar
+resolveAux(Puzzle):-
+    verifica(Puzzle), !.
+resolveAux(Puzzle):-
+    chamaPred(Puzzle, Puzzle1),
+    poeTendas(Puzzle1),
+    relva(Puzzle1),
+    resolveAux(Puzzle1).
 
-% Soma elementos de uma lista
-soma([], 0).
-soma([X|R], S) :-
-    soma(R, S1),
-    S is X + S1.
-
-% verifica se o puzzle esta resolvido
-verifica(Puzzle):-
-    (Tabuleiro, _, _) = Puzzle,
-    todasCelulas(Tabuleiro, TodasCelulasTendas, t),
-    todasCelulas(Tabuleiro, TodasCelulasArvores, a),
-    valida(TodasCelulasArvores, TodasCelulasTendas).
-
-resolve2(Puzzle, Puzzle1):-
+% chama os predicados para resolver o puzzle
+chamaPred(Puzzle, Puzzle1):-
     relva(Puzzle),
     aproveita(Puzzle),
     relva(Puzzle),
     limpaVizinhancas(Puzzle),
     unicaHipotese(Puzzle),
     limpaVizinhancas(Puzzle),
+    relva(Puzzle),
     (Tabuleiro, L, C) = Puzzle,
     inacessiveis(Tabuleiro),
     Puzzle1 = (Tabuleiro, L, C).
 
-% Coloca uma tenda numa vizinhaca qualquer
-coloca(Puzzle, Puzzle1):-
-    (Tabuleiro, L, C) = Puzzle,
-    vazias(Tabuleiro, VizLivres),
-    member(Viz, VizLivres),
-    writeln(Tabuleiro),
-    (Viz = [] -> fail; member(Celula, Viz), insereObjectoCelula(Tabuleiro, t, Celula), Puzzle1 = (Tabuleiro, L, C)).
+% Coloca as tendas para satisfazer o verifica
+poeTendas((Tabuleiro, L, C)):-
+    todasCelulas(Tabuleiro, TodasCelulasArvores, a),
+    maplist(vizinhanca, TodasCelulasArvores, TodasVizinhancas),
+    coordenadas(TodasVizinhancas, ListaPossibilidades, Tabuleiro),
+    valida(TodasCelulasArvores, ListaPossibilidades),
+    coloca((Tabuleiro, L, C), ListaPossibilidades),
+    verifica((Tabuleiro, L, C)), !.
+
+% Escolhe as coordenadas das celulas para as tendas
+coordenadas([], [], _):- !.
+coordenadas([Vizinhanca | RestoVizinhanca], [Coor | ListaPossibilidades], Tabuleiro):-
+    member(Coor, Vizinhanca),
+    celulaVazia(Tabuleiro, Coor),
+    coordenadas(RestoVizinhanca, ListaPossibilidades, Tabuleiro).
+
+
+% Coloca as tendas em varias coordenadas
+coloca(_,[]).
+coloca((Tabuleiro, L, C), [Coordenadas|R]):-
+    insereObjectoCelula(Tabuleiro, t, Coordenadas),
+    coloca((Tabuleiro, L, C), R).
+
+% verifica se as tendas não estão nas vizinhancas alargadas umas das outras
+vizinhancaTendas([], _):-!.
+vizinhancaTendas([Tenda | _], TodasTendas):-
+    maplist(vizinhancaAlargada, TodasTendas, Vizinhancas),
+    vizinhancaAux(Tenda, Vizinhancas), !.
+vizinhancaTendas([_|R], TodasTendas):-
+    vizinhancaAlargada(R, TodasTendas).
+
+vizinhancaAux(_, []):- !.
+vizinhancaAux(Tenda, [Vizinhanca| _]):-
+    member(Tenda, Vizinhanca),!.
+vizinhancaAux(Tenda, [_|R]):-
+    vizinhancaAux(Tenda, R).
+
+% verifica se o puzzle esta resolvido
+verifica((Tabuleiro, L, C)):-
+    calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, t),
+    ContagemLinhas == L,
+    ContagemColunas == C,
+    todasCelulas(Tabuleiro, TodasCelulasTendas, t),
+    todasCelulas(Tabuleiro, TodasCelulasArvores, a),
+    %\+ vizinhancaTendas(TodasCelulasTendas, TodasCelulasTendas),
+    valida(TodasCelulasArvores, TodasCelulasTendas).
