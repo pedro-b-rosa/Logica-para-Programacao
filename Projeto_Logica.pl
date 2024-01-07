@@ -75,6 +75,7 @@ contagem([Linha|R], [Soma|Contagem], Objecto):-
 % celulaVazia(Tabuleiro, (L, C))
 % Tabuleiro eh a variavel com a matriz que representa o tabuleiro
 % L e C Correspodem ah linha e ah coluna que queremos verificar
+% Devolve true se a celula estiver vazia
 %------------------------------------------
 celulaVazia(Tabuleiro, (L, C)):-
     todasCelulas(Tabuleiro, TodasCelulasTendas, t),
@@ -124,6 +125,7 @@ insereVariosObjectos(Tabuleiro, TendaOuRelva, L, [C|R]):-
 %------------------------------------------
 % relva(Puzzle)
 % Puzzle eh a variavel com a matriz que representa o tabuleiro mais as listas com o numero de tendas por linhas e colunas
+% Apos a aplicacao do predicado, tem relva em todas as linhas/colunas cujo numero de tendas ja atingiu o numero de tendas possivel nessas linhas/colunas
 %------------------------------------------
 relva((Tabuleiro, L, C)):-
     length(L, Comprimento),
@@ -147,7 +149,8 @@ insereLinhas(Tabuleiro, [P1|R1], [P2|R2], Comprimento, Objecto, L):-
 
 %------------------------------------------
 % inacessiveis(Tabuleiro)
-% Tabuleiro eh a variavel com a matriz que representa o tabuleiro 
+% Tabuleiro eh a variavel com a matriz que representa o tabuleiro
+% Apos a aplicacao do predicado, tem relva em todas as celulas que nao sao acessiveis
 %------------------------------------------
 inacessiveis(Tabuleiro):-
     todasCelulas(Tabuleiro, TodasCelulasArvores, a),
@@ -166,6 +169,7 @@ insereRelva(Tabuleiro, [P|R]):-
 %------------------------------------------
 % aproveita(Puzzle)
 % Puzzle eh a variavel com a matriz que representa o tabuleiro mais as listas com o numero de tendas por linhas e colunas
+% Apos a aplicacao do predicado, tem tendas em todas as linhas e colunas as quais faltavam colocar X tendas e que tinham exatamente X posicoes livres
 %------------------------------------------
 aproveita((Tabuleiro, L, C)):-
     length(L, Comprimento),
@@ -193,6 +197,7 @@ calculaVazios([Linha|R], [Soma|Contagem]):-
 %------------------------------------------
 % limpaVizinhancas(Puzzle)
 % Puzzle eh a variavel com a matriz que representa o tabuleiro mais as listas com o numero de tendas por linhas e colunas
+% Apos a aplicacao do predicado, tem relva na vizinhanca alargada de todas as tendas
 %------------------------------------------
 limpaVizinhancas((Tabuleiro, _, _)):-
     todasCelulas(Tabuleiro, TodasCelulas, t),
@@ -203,6 +208,7 @@ limpaVizinhancas((Tabuleiro, _, _)):-
 %------------------------------------------
 % unicaHipotese(Puzzle)
 % Puzzle eh a variavel com a matriz que representa o tabuleiro mais as listas com o numero de tendas por linhas e colunas
+% Apos a aplicacao do predicado, todas as arvores que tinham apenas uma posicao livre na sua vizinhanca que lhes permitia ficar ligadas a uma tenda, tem agora uma tenda nessa posicao
 %------------------------------------------
 unicaHipotese((Tabuleiro, _, _)):-
     vazias(Tabuleiro, VizLivres),
@@ -253,6 +259,7 @@ insereUnicaHipotese(Tabuleiro, [_|R]):-
 %------------------------------------------
 % valida(LArv, LTen)
 % LArv e LTen sao listas com todas as coordenadas das tendas e das arvores
+% Eh avaliado para verdade se for possivel estabelecer uma relacao em que existe uma e uma unica tenda para cada arvore nas suas vizinhancas
 %------------------------------------------
 valida(Larv, Lten):-
     length(Larv, Comprimento),
@@ -270,6 +277,7 @@ validaAux([Arv | RestArv], Lten) :-
 %------------------------------------------
 % resolve(Puzzle)
 % Puzzle eh a variavel com a matriz que representa o tabuleiro mais as listas com o numero de tendas por linhas e colunas
+% Apos a aplicacao do predicado, o puzzle esta resolvido
 %------------------------------------------
 resolve(Puzzle):-
     resolveAux(Puzzle).
