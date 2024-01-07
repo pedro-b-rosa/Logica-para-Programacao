@@ -312,22 +312,21 @@ coordenadas([Vizinhanca | RestoVizinhanca], [Coor | ListaPossibilidades], Tabule
     celulaVazia(Tabuleiro, Coor),
     coordenadas(RestoVizinhanca, ListaPossibilidades, Tabuleiro).
 
-
 % Coloca as tendas em varias coordenadas
-coloca(_,[]).
+coloca(_,[]):- !.
 coloca((Tabuleiro, L, C), [Coordenadas|R]):-
     insereObjectoCelula(Tabuleiro, t, Coordenadas),
     coloca((Tabuleiro, L, C), R).
 
-% verifica se as tendas não estão nas vizinhancas alargadas umas das outras
-vizinhancaTendas([], _):-!.
+% verifica se as tendas nao estao nas vizinhancas alargadas umas das outras
+vizinhancaTendas([], _):- fail, !.
 vizinhancaTendas([Tenda | _], TodasTendas):-
     maplist(vizinhancaAlargada, TodasTendas, Vizinhancas),
-    vizinhancaAux(Tenda, Vizinhancas), !.
+    vizinhancaAux(Tenda, Vizinhancas).
 vizinhancaTendas([_|R], TodasTendas):-
-    vizinhancaAlargada(R, TodasTendas).
+    vizinhancaTendas(R, TodasTendas).
 
-vizinhancaAux(_, []):- !.
+vizinhancaAux(_, []):- fail ,!.
 vizinhancaAux(Tenda, [Vizinhanca| _]):-
     member(Tenda, Vizinhanca),!.
 vizinhancaAux(Tenda, [_|R]):-
@@ -340,5 +339,5 @@ verifica((Tabuleiro, L, C)):-
     ContagemColunas == C,
     todasCelulas(Tabuleiro, TodasCelulasTendas, t),
     todasCelulas(Tabuleiro, TodasCelulasArvores, a),
-    %\+ vizinhancaTendas(TodasCelulasTendas, TodasCelulasTendas),
+    \+ vizinhancaTendas(TodasCelulasTendas, TodasCelulasTendas),
     valida(TodasCelulasArvores, TodasCelulasTendas).
