@@ -108,4 +108,15 @@ puzzle(6-13, P), resolve(P), sol(6-13, P1), P1 == P, writeln(true); writeln(fals
 puzzle(6-14, P), resolve(P), sol(6-14, P1), P1 == P, writeln(true); writeln(false).
 puzzle(8-1, P), resolve(P), sol(8-1, P1), P1 == P, writeln(true); writeln(false).
 
+% Retorna uma lista com as arvores sem tendas na vizinhaca
+arvoresSemTendas(_, [], []).
+arvoresSemTendas([Arvore | RestoArvores], TodasTendas, ListaArvores):-
+    vizinhanca(Arvore, Vizinhaca),
+    member(Tenda, TodasTendas),
+    member(Tenda, Vizinhaca),
+    delete(TodasTendas, Tenda, TodasTendas1),
+    arvoresSemTendas(RestoArvores, TodasTendas1, ListaArvores),!.
+arvoresSemTendas([Arvore | RestoArvores], TodasTendas, [Arvore | ListaArvores]):-
+    arvoresSemTendas(RestoArvores, TodasTendas, ListaArvores).
+
 */

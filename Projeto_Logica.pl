@@ -280,7 +280,7 @@ validaAux([Arv | RestArv], Lten) :-
 % Apos a aplicacao do predicado, o puzzle esta resolvido
 %------------------------------------------
 resolve(Puzzle):-
-    resolveAux(Puzzle).
+    resolveAux(Puzzle),!.
 
 % resolve Auxiliar
 resolveAux(Puzzle):-
