@@ -331,7 +331,7 @@ coloca((Tabuleiro, L, C), [Coordenadas|R]):-
     insereObjectoCelula(Tabuleiro, t, Coordenadas),
     coloca((Tabuleiro, L, C), R).
 
-% verifica se as tendas nao estao nas vizinhancas alargadas umas das outras
+% verifica se as tendas estao nas vizinhancas alargadas umas das outras
 vizinhancaTendas([], _):- fail, !.
 vizinhancaTendas([Tenda | _], TodasTendas):-
     maplist(vizinhancaAlargada, TodasTendas, Vizinhancas),
