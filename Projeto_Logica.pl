@@ -286,24 +286,19 @@ resolve(Puzzle):-
 resolveAux(Puzzle):-
     verifica(Puzzle), !.
 resolveAux(Puzzle):-
-    chamaPred(Puzzle, Puzzle1),
-    poeTendas(Puzzle1),
-    relva(Puzzle1),
-    resolveAux(Puzzle1), !.
+    chamaPred(Puzzle),
+    poeTendas(Puzzle),
+    relva(Puzzle),
+    resolveAux(Puzzle), !.
 
 % chama os predicados para resolver o puzzle
-chamaPred(Puzzle, Puzzle1):-
-    relva(Puzzle),
-    aproveita(Puzzle),
-    relva(Puzzle),
-    limpaVizinhancas(Puzzle),
-    unicaHipotese(Puzzle),
-    limpaVizinhancas(Puzzle),
-    relva(Puzzle),
-    (Tabuleiro, L, C) = Puzzle,
+chamaPred((Tabuleiro, L, C)):-
+    relva((Tabuleiro, L, C)),
+    unicaHipotese((Tabuleiro, L, C)),
+    limpaVizinhancas((Tabuleiro, L, C)),
+    relva((Tabuleiro, L, C)),
     inacessiveis(Tabuleiro),
-    Puzzle1 = (Tabuleiro, L, C),
-    aproveita(Puzzle1).
+    aproveita((Tabuleiro, L, C)).
 
 % Coloca as tendas para satisfazer o verifica
 poeTendas((Tabuleiro, L, C)):-
