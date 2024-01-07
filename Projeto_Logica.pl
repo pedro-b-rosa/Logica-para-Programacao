@@ -237,7 +237,7 @@ verificaVizinhancasDentro(TodasCelulas, Tabuleiro, Vizinhos, VizinhacaPosivel):-
 estaDentro([],_,[]):-!.
 estaDentro([P|R], TodasCelulas, [P|Dentro]):-
     member(P, TodasCelulas),
-    estaDentro(R, TodasCelulas, Dentro).
+    estaDentro(R, TodasCelulas, Dentro), !.
 estaDentro([_|R], TodasCelulas, Dentro):-
     estaDentro(R, TodasCelulas, Dentro).
 
@@ -280,7 +280,7 @@ validaAux([Arv | RestArv], Lten) :-
 % Apos a aplicacao do predicado, o puzzle esta resolvido
 %------------------------------------------
 resolve(Puzzle):-
-    resolveAux(Puzzle),!.
+    resolveAux(Puzzle), !.
 
 % resolve Auxiliar
 resolveAux(Puzzle):-
@@ -289,7 +289,7 @@ resolveAux(Puzzle):-
     chamaPred(Puzzle, Puzzle1),
     poeTendas(Puzzle1),
     relva(Puzzle1),
-    resolveAux(Puzzle1).
+    resolveAux(Puzzle1), !.
 
 % chama os predicados para resolver o puzzle
 chamaPred(Puzzle, Puzzle1):-
@@ -319,6 +319,10 @@ coordenadas([], [], _):- !.
 coordenadas([Vizinhanca | RestoVizinhanca], [Coor | ListaPossibilidades], Tabuleiro):-
     member(Coor, Vizinhanca),
     celulaVazia(Tabuleiro, Coor),
+    todasCelulas(Tabuleiro, TodasCelulasRelva, r),
+    todasCelulas(Tabuleiro, TodasCelulas),
+    member(Coor, TodasCelulas),
+    \+ member(Coor, TodasCelulasRelva),
     coordenadas(RestoVizinhanca, ListaPossibilidades, Tabuleiro).
 
 % Coloca as tendas em varias coordenadas
@@ -342,7 +346,7 @@ vizinhancaAux(Tenda, [_|R]):-
     vizinhancaAux(Tenda, R).
 
 % Retorna uma lista com as arvores sem tendas na vizinhaca
-arvoresSemTendas([], [], []).
+arvoresSemTendas([], [], []):- !.
 arvoresSemTendas([Arvore | RestoArvores], TodasTendas, ListaArvores):-
     vizinhanca(Arvore, Vizinhaca),
     member(Tenda, TodasTendas),
@@ -359,5 +363,5 @@ verifica((Tabuleiro, L, C)):-
     ContagemColunas == C,
     todasCelulas(Tabuleiro, TodasCelulasTendas, t),
     todasCelulas(Tabuleiro, TodasCelulasArvores, a),
-    %\+ vizinhancaTendas(TodasCelulasTendas, TodasCelulasTendas),
-    valida(TodasCelulasArvores, TodasCelulasTendas).
+    \+ vizinhancaTendas(TodasCelulasTendas, TodasCelulasTendas),
+    valida(TodasCelulasArvores, TodasCelulasTendas), !.
