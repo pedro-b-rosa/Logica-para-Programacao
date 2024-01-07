@@ -293,11 +293,11 @@ resolveAux(Puzzle):-
 
 % chama os predicados para resolver o puzzle
 chamaPred((Tabuleiro, L, C)):-
+    inacessiveis(Tabuleiro),
     relva((Tabuleiro, L, C)),
     unicaHipotese((Tabuleiro, L, C)),
     limpaVizinhancas((Tabuleiro, L, C)),
     relva((Tabuleiro, L, C)),
-    inacessiveis(Tabuleiro),
     aproveita((Tabuleiro, L, C)).
 
 % Coloca as tendas para satisfazer o verifica
