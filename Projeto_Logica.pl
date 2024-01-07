@@ -271,7 +271,7 @@ validaAux([Arv | RestArv], Lten) :-
     vizinhanca(Arv, Vizinhaca),
     member(Tenda, Lten),
     member(Tenda, Vizinhaca),
-    delete(Lten, Tenda, Lten1),
+    subtract(Lten, [Tenda], Lten1),
     validaAux(RestArv, Lten1).
 
 %------------------------------------------
@@ -302,7 +302,8 @@ chamaPred(Puzzle, Puzzle1):-
     relva(Puzzle),
     (Tabuleiro, L, C) = Puzzle,
     inacessiveis(Tabuleiro),
-    Puzzle1 = (Tabuleiro, L, C).
+    Puzzle1 = (Tabuleiro, L, C),
+    aproveita(Puzzle1).
 
 % Coloca as tendas para satisfazer o verifica
 poeTendas((Tabuleiro, L, C)):-
@@ -326,10 +327,8 @@ coordenadas([Vizinhanca | RestoVizinhanca], [Coor | ListaPossibilidades], Tabule
     coordenadas(RestoVizinhanca, ListaPossibilidades, Tabuleiro).
 
 % Coloca as tendas em varias coordenadas
-coloca(_,[]):- !.
-coloca((Tabuleiro, L, C), [Coordenadas|R]):-
-    insereObjectoCelula(Tabuleiro, t, Coordenadas),
-    coloca((Tabuleiro, L, C), R).
+coloca((Tabuleiro, _, _), Coordenadas):-
+    maplist(insereObjectoCelula(Tabuleiro, t), Coordenadas).
 
 % verifica se as tendas estao nas vizinhancas alargadas umas das outras
 vizinhancaTendas([], _):- fail, !.
@@ -351,7 +350,7 @@ arvoresSemTendas([Arvore | RestoArvores], TodasTendas, ListaArvores):-
     vizinhanca(Arvore, Vizinhaca),
     member(Tenda, TodasTendas),
     member(Tenda, Vizinhaca),
-    delete(TodasTendas, Tenda, TodasTendas1),
+    subtract(TodasTendas, [Tenda], TodasTendas1),
     arvoresSemTendas(RestoArvores, TodasTendas1, ListaArvores),!.
 arvoresSemTendas([Arvore | RestoArvores], TodasTendas, [Arvore | ListaArvores]):-
     arvoresSemTendas(RestoArvores, TodasTendas, ListaArvores).

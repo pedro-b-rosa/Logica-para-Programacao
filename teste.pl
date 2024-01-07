@@ -288,6 +288,7 @@ resolveAux(Puzzle):-
 resolveAux(Puzzle):-
     chamaPred(Puzzle, Puzzle1),
     coloca(Puzzle1),
+    writeln(Puzzle1),
     resolveAux(Puzzle1).
 
 % chama os predicados para resolver o puzzle
@@ -303,29 +304,22 @@ chamaPred(Puzzle, Puzzle1):-
     inacessiveis(Tabuleiro),
     Puzzle1 = (Tabuleiro, L, C).
 
-% Coloca uma tenda numa vizinhaca qualquer
-coloca(Puzzle):-
-    celulaVazia(Puzzle, (L, C)),
-    posValida(Puzzle, (L, C)),
-    insereObjectoCelula(Puzzle, t, (L, C)).
+% Coloca uma tenda num sitio vazio qualquer
+coloca((Tabuleiro, _, _)):-
+    writeln('Coloca pre findall'),
+    findall((Linha,Coluna), (celulaVazia(Tabuleiro, (Linha, Coluna)), posValida(Tabuleiro, (Linha,Coluna))), Hipoteses),
+    writeln('Coloca pos findall'),
+    member((Linha, Coluna), Hipoteses),
+    writeln('Coloca pre insere'),
+    insereObjectoCelula(Tabuleiro, t, (Linha, Coluna)).
 
 % Verifica se a posicao eh valida
 posValida(Puzzle, (L, C)):-
+    writeln('PosValida'),
     todasCelulas(Puzzle, TodasCelulasRelva, r),
     todasCelulas(Puzzle, TodasCelulasTendas, t),
     \+ member((L, C), TodasCelulasRelva),
     \+ vizinhancaTendas([(L,C)], TodasCelulasTendas).
-
-% Retorna uma lista com as arvores sem tendas na vizinhaca
-arvoresSemTendas([], [], []):- !.
-arvoresSemTendas([Arvore | RestoArvores], TodasTendas, ListaArvores):-
-    vizinhanca(Arvore, Vizinhaca),
-    member(Tenda, TodasTendas),
-    member(Tenda, Vizinhaca),
-    delete(TodasTendas, Tenda, TodasTendas1),
-    arvoresSemTendas(RestoArvores, TodasTendas1, ListaArvores),!.
-arvoresSemTendas([Arvore | RestoArvores], TodasTendas, [Arvore | ListaArvores]):-
-    arvoresSemTendas(RestoArvores, TodasTendas, ListaArvores).
 
 % verifica se o puzzle esta resolvido
 verifica((Tabuleiro, L, C)):-
