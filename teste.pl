@@ -287,29 +287,8 @@ resolveAux(Puzzle):-
     verifica(Puzzle), !.
 resolveAux(Puzzle):-
     chamaPred(Puzzle, Puzzle1),
-    poeTendas(Puzzle1),
-    relva(Puzzle1),
-    writeln(Puzzle1),
-    verifica(Puzzle1),
+    coloca(Puzzle1),
     resolveAux(Puzzle1).
-
-% Coloca tendas nas arvores que nao tem tendas nas vizinhancas
-poeTendas(Puzzle):- cheio(Puzzle).
-poeTendas(Puzzle):-
-    writeln('Coloca Tendas'),
-    coloca(Puzzle, Puzzle1),
-    chamaPred(Puzzle1, Puzzle2),
-    poeTendas(Puzzle2).
-
-% Verifica se o puzzle esta cheio
-cheio((Tabuleiro, _, _)):-
-    todasCelulas(Tabuleiro, TodasCelulasTendas, t),
-    todasCelulas(Tabuleiro, TodasCelulasArvores, a),
-    todasCelulas(Tabuleiro, TodasCelulasRelva, r),
-    todasCelulas(Tabuleiro, TodasCelulas),
-    union(TodasCelulasTendas, TodasCelulasArvores, TodasCelulasCheias),
-    union(TodasCelulasCheias, TodasCelulasRelva, TodasCelulasCheiasRelva),
-    subtract(TodasCelulas, TodasCelulasCheiasRelva, []).
 
 % chama os predicados para resolver o puzzle
 chamaPred(Puzzle, Puzzle1):-
@@ -325,19 +304,17 @@ chamaPred(Puzzle, Puzzle1):-
     Puzzle1 = (Tabuleiro, L, C).
 
 % Coloca uma tenda numa vizinhaca qualquer
-coloca(Puzzle, Puzzle1):-
-    (Tabuleiro, L, C) = Puzzle,
-    todasCelulas(Tabuleiro, TodasCelulas),
-    todasCelulas(Tabuleiro, TodasCelulasArvores, a),
-    todasCelulas(Tabuleiro, TodasCelulasTendas, t),
-    arvoresSemTendas(TodasCelulasArvores, TodasCelulasTendas, ListaArvores),
-    member(Arvore, ListaArvores),
-    vizinhanca(Arvore, Vizinhanca),
-    member((Linha, Coluna), TodasCelulas),
-    member((Linha, Coluna), Vizinhanca),
-    celulaVazia(Tabuleiro, (Linha, Coluna)),
-    insereObjectoCelula(Tabuleiro, t, (Linha, Coluna)),
-    Puzzle1 = (Tabuleiro, L, C).
+coloca(Puzzle):-
+    celulaVazia(Puzzle, (L, C)),
+    posValida(Puzzle, (L, C)),
+    insereObjectoCelula(Puzzle, t, (L, C)).
+
+% Verifica se a posicao eh valida
+posValida(Puzzle, (L, C)):-
+    todasCelulas(Puzzle, TodasCelulasRelva, r),
+    todasCelulas(Puzzle, TodasCelulasTendas, t),
+    \+ member((L, C), TodasCelulasRelva),
+    \+ vizinhancaTendas([(L,C)], TodasCelulasTendas).
 
 % Retorna uma lista com as arvores sem tendas na vizinhaca
 arvoresSemTendas([], [], []):- !.
