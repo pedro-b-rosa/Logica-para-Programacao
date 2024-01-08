@@ -307,7 +307,7 @@ poeTendas((Tabuleiro, L, C)):-
     arvoresSemTendas(TodasCelulasArvores, TodasCelulasTendas, ArvoresSemTendas),
     maplist(vizinhanca, ArvoresSemTendas, TodasVizinhancasLivres),
     coordenadas(TodasVizinhancasLivres, ListaPossibilidades, Tabuleiro),
-    coloca((Tabuleiro, L, C), ListaPossibilidades),
+    maplist(insereObjectoCelula(Tabuleiro, t), ListaPossibilidades),
     verifica((Tabuleiro, L, C)), !.
 
 % Escolhe as coordenadas das celulas para as tendas
@@ -321,10 +321,6 @@ coordenadas([Vizinhanca | RestoVizinhanca], [Coor | ListaPossibilidades], Tabule
     \+ member(Coor, TodasCelulasRelva),
     coordenadas(RestoVizinhanca, ListaPossibilidades, Tabuleiro),
     \+ vizinhancaTendas([Coor], ListaPossibilidades).
-
-% Coloca as tendas em varias coordenadas
-coloca((Tabuleiro, _, _), Coordenadas):-
-    maplist(insereObjectoCelula(Tabuleiro, t), Coordenadas).
 
 % verifica se as tendas estao nas vizinhancas alargadas umas das outras
 vizinhancaTendas([], _):- fail, !.
