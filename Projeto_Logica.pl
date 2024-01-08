@@ -319,7 +319,8 @@ coordenadas([Vizinhanca | RestoVizinhanca], [Coor | ListaPossibilidades], Tabule
     todasCelulas(Tabuleiro, TodasCelulas),
     member(Coor, TodasCelulas),
     \+ member(Coor, TodasCelulasRelva),
-    coordenadas(RestoVizinhanca, ListaPossibilidades, Tabuleiro).
+    coordenadas(RestoVizinhanca, ListaPossibilidades, Tabuleiro),
+    \+ vizinhancaTendas([Coor], ListaPossibilidades).
 
 % Coloca as tendas em varias coordenadas
 coloca((Tabuleiro, _, _), Coordenadas):-
